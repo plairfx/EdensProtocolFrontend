@@ -1,45 +1,59 @@
-import * as React from 'react';
-import Box from '@mui/joy/Box';
-import Button from '@mui/joy/Button';
-import FormControl from '@mui/joy/FormControl';
-import FormLabel from '@mui/joy/FormLabel';
-import FormHelperText from '@mui/joy/FormHelperText';
-import Input from '@mui/joy/Input';
-import Stack from '@mui/joy/Stack';
-import SelectCustomOption from "./Chains"
-import SelectCustomOption2 from './Tokens';
+import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
 
-export default function BoxSystemProps2() {
-    const inputStyles = {
-        height: 20,
-        width: 240,
-    };
 
-    return (
-        <div style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: 0,
-            padding: 0
-        }}>
-
-            <Box
-                sx={{
-                    height: 600,
-                    width: 500,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 4,
-                    p: 2,
-                    border: '2px solid grey',
-                    borderRadius: '10px',
-                    flexDirection: 'column'
-                }}
-            >
-            </Box>
-        </div>
-    );
+interface DW {
+    rindexerid: string
+    chain: string
+    blockNumber: string
+    amount: string
 }
+
+
+
+interface DepositAndWithdrawResponse {
+    data: {
+        allEdenPllinkDepositeds: {
+            nodes: DW[]
+        }
+        allEdenPllinkWithdrawns: {
+            nodes: DW[]
+        }
+    }
+}
+
+const GET_RECENT_DEPOSITS_AND_WITHDRAWS`query Query {
+  allEdenPllinkDepositeds(first:20, orderBy: [BLOCK_NUMBER_DESC, TX_INDEX_DESC]) {
+    nodes {
+      chain
+      blockNumber
+      amount
+    }
+  }
+  allEdenPllinkWithdrawns {
+    nodes {
+      chain
+      blockNumber
+      amount
+    }
+  }
+}`
+
+
+async function fetchDW(); Promise < DepositAndWithdrawResponse > {
+    const response = await fetch("/api/graphql", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+
+        },
+        body: JSON.stringify({
+            query: GET_RECENT_DEPOSITS_AND_WITHDRAWS,
+        }),
+
+    })
+         return response.json();
+}
+
+
+

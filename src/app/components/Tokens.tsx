@@ -20,6 +20,10 @@ const optionsBase = [
     { value: '2', label: 'Link', src: '/static/images/avatar/2.jpg' }
 ];
 
+const optionsAvax = [
+    { value: '2', label: 'Link', src: '/static/images/avatar/2.jpg' }
+]
+
 
 
 export default function SelectCustomOption({ onChange }) {
@@ -91,7 +95,7 @@ export default function SelectCustomOption({ onChange }) {
                 ))}
             </Select>
         );
-    } else {
+    } else if (chainId == 84532) {
         // Same structure but with optionsBase
         return (
             <Select
@@ -118,5 +122,32 @@ export default function SelectCustomOption({ onChange }) {
                 ))}
             </Select>
         );
+    } else {
+        return (
+            <Select
+                defaultValue="2"
+                onChange={(event, newValue) => onChange && onChange(newValue)}
+                slotProps={{
+                    listbox: {
+                        sx: {
+                            '--ListItemDecorator-size': '44px',
+                        },
+                    },
+                }}
+                sx={{ '--ListItemDecorator-size': '44px', minWidth: 240, color: 'blue' }}
+            // renderValue={renderValue}
+            >
+                {optionsAvax.map((option, index) => (
+                    <React.Fragment key={option.value}>
+                        {index !== 0 ? <ListDivider role="none" inset="startContent" /> : null}
+                        <Option value={option.value} label={option.label}>
+                            <ListItemDecorator></ListItemDecorator>
+                            {option.label}
+                        </Option>
+                    </React.Fragment>
+                ))}
+            </Select>
+        );
+
     }
 }

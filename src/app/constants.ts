@@ -29,7 +29,16 @@ export const chainsForEden: ContractsConfig = {
         EdenEVMETH: null,
         EdenPLETH: "0x29CD2ed9a5cd274942b58feFaC17165BB30542b0",
         EdenPLLINK: "0x0021E75635965453C840e8c54015ef906a4A99e3",
+    },
+    43113: {
+    EdenEVMLINK: "0xf52316eE6f12304FA47eb743057285F3EDA601ca",
+    Link: "0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" ,
+    EdenEVMETH: null,
+    EdenPLETH: null,
+    EdenPLLINK: null,
     }
+
+
 }
 
 export const erc20Abi = [

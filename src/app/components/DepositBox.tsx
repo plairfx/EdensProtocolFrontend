@@ -81,6 +81,7 @@ export default function BoxSystemProps() {
                 const approvedAmount = await getApprovedAmount(EdenPLAddressLINK)
 
                 if (Number(realAmount) > approvedAmount) {
+                    buttonie.current && (buttonie.current.innerText = "Approving...!")
                     await writeContractAsync({
                         abi: erc20Abi,
                         address: Link as `0x${string}`,
@@ -96,7 +97,7 @@ export default function BoxSystemProps() {
                 console.log(cleanCommitment, commitment)
                 const fee = parseEther("0.01")
 
-
+                buttonie.current && (buttonie.current.innerText = "Sending...!")
                 await writeContractAsync({
                     abi: EdenPLAbi,
                     address: EdenPLAddressLINK as `0x${string}`,
@@ -138,6 +139,7 @@ export default function BoxSystemProps() {
                 const approvedAmount = await getApprovedAmount(EdenEVMLINK)
 
                 if (Number(amounts) > approvedAmount) {
+
                     await writeContractAsync({
                         abi: erc20Abi,
                         address: Link as `0x${string}`,

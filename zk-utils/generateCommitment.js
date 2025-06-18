@@ -30,6 +30,8 @@ async function main(args = []) {
     ])
   );
 
+  console.log("Commitmen", commitment);
+
   // 3. Return abi encoded nullifier, secret, commitment
   const res = abiCoder.encode(
     ["bytes32", "bytes32", "bytes32", "bytes32"],

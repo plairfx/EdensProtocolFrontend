@@ -15,19 +15,22 @@ import SelectCustomOption from './Tokens';
 import { useState, useMemo, useRef, useEffect } from "react"
 import { chainsForEden, EdenEVMAbi, EdenPLAbi, erc20Abi } from "../constants.ts"
 import { useReadContract, useChainId, useConfig, useAccount, useWriteContract } from 'wagmi'
-import { readContract, waitForTransactionReceipt } from "@wagmi/core"
-import { parseEther } from 'viem'
+import { readContract, waitForTransactionReceipt, getBalance } from "@wagmi/core"
+import { parseEther, weiUnits } from 'viem'
 import BasicModal from "./DepositModal.tsx";
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import Divider from '@mui/joy/Divider';
 import Chip from '@mui/joy/Chip';
+import { error } from 'console';
 
 
 export default function BoxSystemProps() {
 
     const [tokens, setTokens] = useState("1")
+    const [error, setError] = useState("")
     const [amounts, setAmounts] = useState("")
     const buttonie = useRef<HTMLButtonElement>(null)
+    const errorMessage = useRef<HTMLTextAreaElement>(null)
     const { data: hash, isPending, writeContractAsync } = useWriteContract()
     const [proof, setProof] = useState("");
 
@@ -39,15 +42,21 @@ export default function BoxSystemProps() {
         width: 240,
     };
 
+
+
     async function getApprovedAmount(EdenAddress: string | null): Promise<number> {
+
         if (!EdenAddress) {
             alert("No address found, use a supported chain")
             return 0
         }
 
+
         buttonie.current && (buttonie.current.innerText = "Loading...")
 
         const Link = chainsForEden[chainId]["Link"]
+
+
         const response = await readContract(config, {
 
             abi: erc20Abi,
@@ -59,17 +68,58 @@ export default function BoxSystemProps() {
         return response as number
     }
 
+
+    async function getBalanceUser(tokenAmount: number): Promise<boolean> {
+        const Link = chainsForEden[chainId]["Link"]
+
+        if (tokens == "1") {
+            const balance = await getBalance(config, {
+                address: account.address as `0x${string}`,
+                chainId: chainId,
+            })
+
+            const ethBalance = parseEther(tokenAmount.toString())
+
+
+            if (tokenAmount > (balance.value)) {
+                errorMessage.current && (errorMessage.current.innerText = "Your ETH balance is too low!")
+
+                return true
+            }
+
+        } else {
+            const response = await readContract(config, {
+
+                abi: erc20Abi,
+                address: Link as `0x${string}`,
+                functionName: `balanceOf`,
+                args: [account.address]
+            })
+
+            if (tokenAmount > Number(response)) {
+                setError("Your balance is too low!")
+
+                setTimeout(() => {
+                    setError("")
+                }, 5000)
+                errorMessage.current && (errorMessage.current.innerText = "Your LINK Balance is too low!")
+                return true
+            }
+
+            return false
+
+        }
+        return false;
+
+    }
+
     async function handleSubmit() {
-        console.log(amounts)
-        console.log(tokens)
-
-        // We need to fine-tune the error handling, 
-
 
         const Link = chainsForEden[chainId]["Link"]
 
         const realAmount = parseEther(amounts)
         const args = [realAmount];
+
 
         buttonie.current && (buttonie.current.innerText = "Processing...")
 
@@ -78,7 +128,15 @@ export default function BoxSystemProps() {
             const EdenPLAddressLINK = chainsForEden[chainId]["EdenPLLINK"]
 
             if (tokens != "1") {
+
+                const amount = await getBalanceUser(Number(realAmount))
+                if (amount == true) {
+                    buttonie.current && (buttonie.current.innerText = "Deposit")
+                    throw new Error("Insufficient balance");
+
+                }
                 const approvedAmount = await getApprovedAmount(EdenPLAddressLINK)
+
 
                 if (Number(realAmount) > approvedAmount) {
                     buttonie.current && (buttonie.current.innerText = "Approving...!")
@@ -116,6 +174,13 @@ export default function BoxSystemProps() {
                 const fee = parseEther("0.01");
                 console.log(commitment)
 
+                const amount = await getBalanceUser(Number(realAmount))
+
+                if (amount == true) {
+                    buttonie.current && (buttonie.current.innerText = "Deposit")
+                    throw new Error("Insufficient balance");
+                }
+
                 await writeContractAsync({
                     abi: EdenPLAbi,
                     address: EdenPLAddressETH as `0x${string}`,
@@ -136,6 +201,13 @@ export default function BoxSystemProps() {
 
             if (tokens != "1") {
 
+
+                const amount = await getBalanceUser(Number(realAmount))
+                if (amount == true) {
+                    buttonie.current && (buttonie.current.innerText = "Deposit")
+                    throw new Error("Insufficient balance");
+
+                }
                 const approvedAmount = await getApprovedAmount(EdenEVMLINK)
 
                 if (Number(amounts) > approvedAmount) {
@@ -172,6 +244,11 @@ export default function BoxSystemProps() {
                 const [commitment, note] = await second(args);
                 const cleanCommitment = String(commitment).slice(2);
 
+                const amount = await getBalanceUser(Number(realAmount))
+                if (amount == true) {
+                    buttonie.current && (buttonie.current.innerText = "Deposit")
+                    throw new Error("Insufficient balance");
+                }
                 const fee = parseEther("0.01")
                 await writeContractAsync({
                     abi: EdenEVMAbi,
@@ -193,7 +270,6 @@ export default function BoxSystemProps() {
     }
 
     return (
-
 
         <div style={{
 
@@ -226,14 +302,19 @@ export default function BoxSystemProps() {
                     fontWeight: 'bolder',
                     color: 'black'
                 }}>
+                    {error && <div>{error}</div>}
                     Deposit
                 </h1>
-                <div><SelectCustomOption onChange={setTokens} /></div>
+                <div>
+                    <FormLabel>Token</FormLabel>
+                    <SelectCustomOption onChange={setTokens} /></div>
 
-                <div><Input
-                    sx={inputStyles} placeholder="Enter token amount..." value={amounts} onChange={(e) => setAmounts(e.target.value)} /></div>
+                <div>
+                    <FormLabel>Token Amount</FormLabel>
+                    <Input
+                        sx={inputStyles} placeholder="Enter token amount..." value={amounts} onChange={(e) => setAmounts(e.target.value)} /></div>
                 <Divider>
-
+                    <Typography ref={errorMessage}> </Typography>
                 </Divider>
                 <div><Button ref={buttonie} onClick={handleSubmit} sx={{
                     color: 'white',
@@ -241,6 +322,7 @@ export default function BoxSystemProps() {
                     borderRadius: '40px',
                     width: 150,
                 }} >Deposit</Button></div>
+
 
                 <BasicModal WithdrawProof={proof} />
             </Box>

@@ -12,32 +12,28 @@ import * as generate_witness from '../../../zk-utils/generate_witness.js';
 import { AbiCoder, ethers } from 'ethers';
 
 
-
 import SelectCustomOption from './Tokens.tsx';
 import { useState, useMemo, useRef, useEffect } from "react"
 import { chainsForEden, EdenEVMAbi, EdenPLAbi, erc20Abi } from "../constants.ts"
 import { useReadContract, useChainId, useConfig, useAccount, useWriteContract } from 'wagmi'
-import { readContract, waitForTransactionReceipt, type WriteContractReturnType } from "@wagmi/core"
+import { readContract, waitForTransactionReceipt } from "@wagmi/core"
 import { parseEther } from 'viem'
 import BasicModal from "./WithdrawModal.tsx";
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import Divider from '@mui/joy/Divider';
 import { pbkdf2 } from 'crypto';
-import { reset } from 'viem/actions';
 
 
 
 export default function BoxSystemProps2() {
+
+    // Input values..
     const abiCoder = new AbiCoder();
     const [recipients, setRecipients] = useState("")
     const [tokens, setTokens] = useState("1")
     const [proof, setProof] = useState("");
-    const [modalOpen, setModalOpen] = useState("")
 
     const buttonie = useRef<HTMLButtonElement>(null)
-    const ban = useRef<HTMLButtonElement>(null)
-
-    const TextError = useRef<HTMLElement>(null)
 
     const { data: hash, isPending, writeContractAsync } = useWriteContract()
 
@@ -48,17 +44,16 @@ export default function BoxSystemProps2() {
         height: 20,
         width: 240,
     };
+    const Link = chainsForEden[chainId]["Link"]
 
+    const args = [proof, recipients, 0]
 
 
     async function handleSubmit() {
 
-        const Link = chainsForEden[chainId]["Link"]
-        const argsie = [proof, recipients, 0, tokens]
 
-        buttonie.current && (buttonie.current.innerText = "Processing Proof...")
 
-        const witness = await generate_witness.main(argsie)
+        const witness = await generate_witness.main(args);
 
         const [pA, pB, pC, root, nullifierHash, WithdrawAmount] = abiCoder.decode(
             [
@@ -71,16 +66,37 @@ export default function BoxSystemProps2() {
             ], witness
         );
 
-        const pAClean = [pA[0], pA[1]];
-        const pBClean = [[pB[0][0], pB[0][1]], [pB[1][0], pB[1][1]]];
-        const pCClean = [pC[0], pC[1]];
 
         if (chainId == 11155111) {
 
-            if (tokens != "1") {
-                const EdenPLAddressLINK = chainsForEden[chainId]["EdenPLLINK"]
 
-                buttonie.current && (buttonie.current.innerText = "Submitting Withdraw...")
+            // we fixed the issue by going outside thre if statement,
+            // i assume for some reason it went outside..
+            const EdenPLAddressLINK = chainsForEden[chainId]["EdenPLLINK"]
+
+            const pAClean = [pA[0], pA[1]];
+            const pBClean = [[pB[0][0], pB[0][1]], [pB[1][0], pB[1][1]]];
+            const pCClean = [pC[0], pC[1]];
+
+            await writeContractAsync({
+                abi: EdenPLAbi,
+                address: EdenPLAddressLINK as `0x${string}`,
+                functionName: "withdraw",
+                args: [
+                    pAClean,
+                    pBClean,
+                    pCClean,
+                    nullifierHash,
+                    recipients as `0x${string}`,
+                    root,
+                    BigInt(0),
+                    "0x0000000000000000000000000000000000000000" as `0x${string}`,
+                    BigInt(WithdrawAmount)
+                ],
+            })
+            console.log("WITHDRAW COMPLETE!")
+
+            if (tokens != "1") {
                 await writeContractAsync({
                     abi: EdenPLAbi,
                     address: EdenPLAddressLINK as `0x${string}`,
@@ -93,27 +109,29 @@ export default function BoxSystemProps2() {
                         recipients as `0x${string}`,
                         root,
                         BigInt(0),
-                        "0x0000000000000000000000000000000000000000" as `0x${string}`,
+                        "0xd2135CfB216b74109775236E36d4b433F1DF507B" as `0x${string}`,
                         BigInt(WithdrawAmount)
                     ],
                 })
 
             } else {
                 const EdenPLAddressETH = chainsForEden[chainId]["EdenPLETH"]
+
+
                 await writeContractAsync({
                     abi: EdenPLAbi,
                     address: EdenPLAddressETH as `0x${string}`,
                     functionName: "withdraw",
                     args: [
-                        pAClean,
-                        pBClean,
-                        pCClean,
+                        pA,
+                        pB,
+                        pC,
                         nullifierHash,
                         recipients as `0x${string}`,
                         root,
-                        BigInt(0),
-                        "0x0000000000000000000000000000000000000000" as `0x${string}`,
-                        BigInt(WithdrawAmount)
+                        "0",
+                        "0",
+                        WithdrawAmount
                     ],
                 })
 
@@ -126,19 +144,19 @@ export default function BoxSystemProps2() {
             if (tokens != "1") {
 
                 await writeContractAsync({
-                    abi: EdenEVMAbi,
+                    abi: EdenPLAbi,
                     address: EdenEVMLINK as `0x${string}`,
                     functionName: "withdraw",
                     args: [
-                        pAClean,
-                        pBClean,
-                        pCClean,
+                        pA,
+                        pB,
+                        pC,
                         nullifierHash,
                         recipients as `0x${string}`,
                         root,
-                        BigInt(0),
-                        "0x0000000000000000000000000000000000000000" as `0x${string}`,
-                        BigInt(WithdrawAmount)
+                        "0",
+                        "0",
+                        WithdrawAmount
                     ],
                 })
 
@@ -146,30 +164,28 @@ export default function BoxSystemProps2() {
             } else {
 
                 await writeContractAsync({
-                    abi: EdenEVMAbi,
+                    abi: EdenPLAbi,
                     address: EdenEVMLINK as `0x${string}`,
                     functionName: "withdraw",
                     args: [
-                        pAClean,
-                        pBClean,
-                        pCClean,
+                        pA,
+                        pB,
+                        pC,
                         nullifierHash,
                         recipients as `0x${string}`,
                         root,
-                        BigInt(0),
-                        "0x0000000000000000000000000000000000000000" as `0x${string}`,
-                        BigInt(WithdrawAmount)
+                        "0",
+                        "0",
+                        WithdrawAmount
                     ],
                 })
 
             }
 
         }
-        buttonie.current && (buttonie.current.innerText = "Submit!")
 
-        setModalOpen("Withdraw completed successfully!")
+
     }
-
 
     return (
         <div style={{
@@ -180,6 +196,7 @@ export default function BoxSystemProps2() {
             padding: 0,
             height: 600,
         }}>
+
             <Box
                 sx={{
                     bgcolor: '#fff',
@@ -195,6 +212,7 @@ export default function BoxSystemProps2() {
 
                 }}
             >
+
                 <h1 style={{
                     fontSize: '25px',
                     fontWeight: 'bolder',
@@ -202,33 +220,26 @@ export default function BoxSystemProps2() {
                 }}>
                     Withdraw
                 </h1>
-                <div>
-                    <FormLabel>Token</FormLabel>
-                    <SelectCustomOption onChange={setTokens} /></div>
+                <div><SelectCustomOption onChange={setTokens} /></div>
 
-                <div>
-                    <FormLabel>Receiver Address</FormLabel>
-                    <Input
-                        sx={inputStyles} placeholder="Enter receiver...." value={recipients} onChange={(e) => setRecipients(e.target.value)} /></div>
-                <div>
-                    <FormLabel>Deposit Proof</FormLabel>
-                    <Input
-                        sx={inputStyles} placeholder="Enter deposit note....." value={proof} onChange={(e) => setProof(e.target.value)} /></div>
+                <div><Input
+                    sx={inputStyles} placeholder="Enter receiver...." value={recipients} onChange={(e) => setRecipients(e.target.value)} /></div>
+                <div><Input
+                    sx={inputStyles} placeholder="Enter deposit note....." value={proof} onChange={(e) => setProof(e.target.value)} /></div>
 
+                <Divider>
 
+                </Divider>
 
                 <div><Button ref={buttonie} onClick={handleSubmit} sx={{
+
                     color: 'white',
                     backgroundColor: 'blue',
                     borderRadius: '10px',
                     width: 150,
                 }} >Withdraw</Button></div>
 
-                <BasicModal Message={modalOpen} />
-
-
-
-
+                <BasicModal />
             </Box>
         </div>
     );

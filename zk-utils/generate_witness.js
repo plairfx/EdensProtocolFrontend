@@ -38,12 +38,12 @@ async function getCommitments(csvData) {
 }
 
 async function main(args = []) {
-  // const inputs = process.argv.slice(2, process.argv.length);
-
   const [commitment, nullifier, amount, secret] = abiCoder.decode(
     ["bytes32", "bytes32", "bytes32", "bytes32"],
     args[0]
   );
+
+  console.log("test1");
 
   const Rnullifier = hexToBigint(nullifier);
   const Rsecret = hexToBigint(secret);
@@ -52,17 +52,21 @@ async function main(args = []) {
   // 2. Get nullifier hash
   const nullifierHash = await pedersenHash(leBigintToBuffer(Rnullifier, 31));
 
+  console.log("test2");
+
   // 3. Loading.. the commitment from the csv file from the rindexer...
 
-  const commitments = await loadFromFile();
+  const commitments = await loadFromFile(args[3]);
 
   const leaves = commitments.map((l) => hexToBigint(l));
 
+  console.log("test3");
+
   const tree = await mimicMerkleTree(leaves);
+  console.log("test4");
+
   const merkleProof = tree.proof(hexToBigint(commitment));
-
-  console.log("MerkleProof Good");
-
+  console.log("test5");
   // 4. Format witness input to exactly match circuit expectations
 
   const input = {

@@ -17,7 +17,7 @@ contracts:
     details:
       - network: sepolia
         address: 0x29CD2ed9a5cd274942b58feFaC17165BB30542b0
-        start_block: "8568066"
+        start_block: "8582560"
     abi: ./abis/EdenPL.abi.json
     include_events:
       - Deposited

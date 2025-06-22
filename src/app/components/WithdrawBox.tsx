@@ -17,8 +17,8 @@ import SelectCustomOption from './Tokens.tsx';
 import { useState, useMemo, useRef, useEffect } from "react"
 import { chainsForEden, EdenEVMAbi, EdenPLAbi, erc20Abi } from "../constants.ts"
 import { useReadContract, useChainId, useConfig, useAccount, useWriteContract } from 'wagmi'
-import { readContract, waitForTransactionReceipt, type WriteContractReturnType } from "@wagmi/core"
-import { parseEther } from 'viem'
+import { readContract, waitForTransactionReceipt, type WriteContractReturnType, getBalance } from "@wagmi/core"
+import { parseEther, formatEther } from 'viem'
 import BasicModal from "./WithdrawModal.tsx";
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import Divider from '@mui/joy/Divider';
@@ -33,13 +33,9 @@ export default function BoxSystemProps2() {
     const [tokens, setTokens] = useState("1")
     const [proof, setProof] = useState("");
     const [modalOpen, setModalOpen] = useState("")
-
     const buttonie = useRef<HTMLButtonElement>(null)
-    const ban = useRef<HTMLButtonElement>(null)
-
-    const TextError = useRef<HTMLElement>(null)
-
     const { data: hash, isPending, writeContractAsync } = useWriteContract()
+    const [balance, setBalance] = useState("")
 
     const chainId = useChainId()
     const config = useConfig()
@@ -49,6 +45,10 @@ export default function BoxSystemProps2() {
         width: 240,
     };
 
+
+    useEffect(() => {
+        getPoolBalance();
+    }, [chainId, tokens]);
 
 
     async function handleSubmit() {
@@ -171,6 +171,80 @@ export default function BoxSystemProps2() {
     }
 
 
+
+    async function getPoolBalance(): Promise<Number> {
+        if (chainId == 11155111) {
+
+            const Link = chainsForEden[chainId]["Link"]
+
+            if (tokens == "1") {
+                const EdenPLAddressETH = chainsForEden[chainId]["EdenPLETH"]
+                const balance = await getBalance(config, {
+                    address: EdenPLAddressETH as `0x${string}`,
+                    chainId: chainId,
+                })
+                setBalance(formatEther(balance.value));
+                return Number(balance)
+            } else {
+                const EdenPLAddressLINK = chainsForEden[chainId]["EdenPLLINK"]
+                const balance = await readContract(config, {
+
+                    abi: erc20Abi,
+                    address: Link as `0x${string}`,
+                    functionName: `balanceOf`,
+                    args: [EdenPLAddressLINK as `0x${string}`]
+                })
+                setBalance(formatEther(balance));
+                return Number(balance)
+
+            }
+        } else if (chainId == 84532) {
+            const Link = chainsForEden[chainId]["Link"]
+
+            if (tokens == "1") {
+                const EdenEVMAddressETH = chainsForEden[chainId]["EdenEVMETH"]
+                const balance = await getBalance(config, {
+                    address: EdenEVMAddressETH as `0x${string}`,
+                    chainId: chainId,
+                })
+                setBalance(formatEther(balance.value));
+                return Number(balance)
+
+            } else {
+                const EdenEVMAddressLINK = chainsForEden[chainId]["EdenEVMLINK"]
+                const balance = await readContract(config, {
+
+                    abi: erc20Abi,
+                    address: Link as `0x${string}`,
+                    functionName: `balanceOf`,
+                    args: [EdenEVMAddressLINK as `0x${string}`]
+                })
+                setBalance(formatEther(balance));
+                return Number(balance)
+
+            }
+        } else {
+            // avalanche has only LINK!
+            const Link = chainsForEden[chainId]["Link"]
+            const EdenEVMAddressLINK = chainsForEden[chainId]["EdenEVMLINK"]
+            const balance = await readContract(config, {
+
+                abi: erc20Abi,
+                address: Link as `0x${string}`,
+                functionName: `balanceOf`,
+                args: [EdenEVMAddressLINK as `0x${string}`]
+            })
+
+            setBalance(formatEther(balance));
+            return Number(balance)
+
+        }
+
+
+
+    }
+
+
     return (
         <div style={{
             display: 'flex',
@@ -216,7 +290,7 @@ export default function BoxSystemProps2() {
                         sx={inputStyles} placeholder="Enter deposit note....." value={proof} onChange={(e) => setProof(e.target.value)} /></div>
 
 
-
+                <Typography>Pool Balance:{balance}</Typography>
                 <div><Button ref={buttonie} onClick={handleSubmit} sx={{
                     color: 'white',
                     backgroundColor: 'blue',

@@ -5,16 +5,21 @@ interface ContractsConfig {
         EdenPLLINK: string | null
         EdenEVMLINK: string | null
         Link: string | null
+        EdenVaultETH: string | null
+      EdenVaultLINK: string | null
+
     }
 }
 
 export const chainsForEden: ContractsConfig = {
     84532: {
-        EdenEVMLINK: "0xB467E74c4D2Edb930280f2AEE52b2ec28597eD1d",
-        EdenEVMETH: "0x67d0F2ca1961E69Ac7665B72207a89CEF9339CAC",
+        EdenEVMLINK: "0xCCAda501AC392DB699aA85432eabc03abe403f30",
+        EdenEVMETH: "0xA17Dd3Cc59951b0ED78D3bC9f6Ee944fF53FD1f2",
         Link: "0xE4aB69C077896252FAFBD49EFD26B5D171A32410",
         EdenPLETH: null,
         EdenPLLINK: null,
+      EdenVaultETH:  "0x4418Ba6d81b2C3C031A969203d26A49bB8055d20",
+      EdenVaultLINK: "0x9680df0A8C755916cc42Afe686E718c67468EbC7",
     },
     31337: {
         EdenPLETH: null,
@@ -22,24 +27,296 @@ export const chainsForEden: ContractsConfig = {
         EdenEVMLINK: null,
         EdenEVMETH: null,
         Link: null,
+        EdenVaultETH: null,
+        EdenVaultLINK: null,
     },
     11155111: {
         EdenEVMLINK: null,
         Link: "0x779877A7B0D9E8603169DdbD7836e478b4624789",
         EdenEVMETH: null,
-        EdenPLETH: "0x29CD2ed9a5cd274942b58feFaC17165BB30542b0",
-        EdenPLLINK: "0x0021E75635965453C840e8c54015ef906a4A99e3",
+        EdenPLETH: "0x4418Ba6d81b2C3C031A969203d26A49bB8055d20",
+        EdenPLLINK: "0xD90f34B559C7b964cb705c5cadaCb682950324f9",
+        EdenVaultETH:  "0xa75f35ed47fC32EFAf2513B1c19194130e41002D",
+        EdenVaultLINK: "0x62ea0C3001daf56fe7642F07FA23785639887e8e",
     },
     43113: {
-    EdenEVMLINK: "0xf52316eE6f12304FA47eb743057285F3EDA601ca",
-    Link: "0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" ,
+    EdenEVMLINK: "0xD90f34B559C7b964cb705c5cadaCb682950324f9",
+    Link: "0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846",
     EdenEVMETH: null,
     EdenPLETH: null,
     EdenPLLINK: null,
+    EdenVaultETH:  null,
+    EdenVaultLINK: "0x9680df0A8C755916cc42Afe686E718c67468EbC7",
     }
 
 
+
 }
+
+export const EdenVaultAbi = [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "depositAsset",
+          "type": "address",
+          "internalType": "address"
+        },
+        { "name": "_pool", "type": "address", "internalType": "address" }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    { "type": "receive", "stateMutability": "payable" },
+    {
+      "type": "function",
+      "name": "allowance",
+      "inputs": [
+        { "name": "owner", "type": "address", "internalType": "address" },
+        { "name": "spender", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "approve",
+      "inputs": [
+        { "name": "spender", "type": "address", "internalType": "address" },
+        { "name": "amount", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "balanceOf",
+      "inputs": [
+        { "name": "account", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "convertToAssets",
+      "inputs": [
+        { "name": "shares", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [
+        { "name": "assets", "type": "uint256", "internalType": "uint256" }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "convertToShares",
+      "inputs": [
+        { "name": "assets", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [
+        { "name": "shares", "type": "uint256", "internalType": "uint256" }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "decimals",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint8", "internalType": "uint8" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "decreaseAllowance",
+      "inputs": [
+        { "name": "spender", "type": "address", "internalType": "address" },
+        {
+          "name": "subtractedValue",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "deposit",
+      "inputs": [
+        { "name": "amount", "type": "uint256", "internalType": "uint256" },
+        { "name": "minAmount", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [
+        { "name": "shares", "type": "uint256", "internalType": "uint256" }
+      ],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "getAsset",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "increaseAllowance",
+      "inputs": [
+        { "name": "spender", "type": "address", "internalType": "address" },
+        { "name": "addedValue", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "name",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "string", "internalType": "string" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "symbol",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "string", "internalType": "string" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "totalAssets",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "totalSupply",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "transfer",
+      "inputs": [
+        { "name": "to", "type": "address", "internalType": "address" },
+        { "name": "amount", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "transferFrom",
+      "inputs": [
+        { "name": "from", "type": "address", "internalType": "address" },
+        { "name": "to", "type": "address", "internalType": "address" },
+        { "name": "amount", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "useLiq",
+      "inputs": [
+        { "name": "amount", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "withdraw",
+      "inputs": [
+        { "name": "amount", "type": "uint256", "internalType": "uint256" },
+        { "name": "minAmount", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [
+        { "name": "assets", "type": "uint256", "internalType": "uint256" }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "Approval",
+      "inputs": [
+        {
+          "name": "owner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "spender",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Deposited",
+      "inputs": [
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Transfer",
+      "inputs": [
+        {
+          "name": "from",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "to",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Withdrawn",
+      "inputs": [
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    { "type": "error", "name": "AmountIsNotEqualDepositedETH", "inputs": [] },
+    { "type": "error", "name": "SharesOrAssetsLessThanExpected", "inputs": [] }
+  ]
 
 export const erc20Abi = [
     {

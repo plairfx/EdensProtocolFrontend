@@ -16,8 +16,8 @@ contracts:
   - name: EdenPL
     details:
       - network: sepolia
-        address: 0x29CD2ed9a5cd274942b58feFaC17165BB30542b0
-        start_block: "8582560"
+        address: 0x4418Ba6d81b2C3C031A969203d26A49bB8055d20
+        start_block: "8615200"
     abi: ./abis/EdenPL.abi.json
     include_events:
       - Deposited
@@ -27,8 +27,8 @@ contracts:
   - name: EdenPLLINK
     details:
       - network: sepolia
-        address: 0x0021E75635965453C840e8c54015ef906a4A99e3
-        start_block: "8568066"
+        address: 0xD90f34B559C7b964cb705c5cadaCb682950324f9
+        start_block: "8615200"
     abi: ./abis/EdenPL.abi.json
     include_events:
       - Deposited

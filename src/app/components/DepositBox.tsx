@@ -2,9 +2,7 @@
 import * as React from 'react';
 import Box from '@mui/joy/Box';
 import Button from '@mui/joy/Button';
-import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
-import FormHelperText from '@mui/joy/FormHelperText';
 import Input from '@mui/joy/Input';
 import Stack from '@mui/joy/Stack';
 import { main, second } from '../../../zk-utils/generateCommitment.js';
@@ -13,16 +11,16 @@ import ButtonGroup from '@mui/joy/ButtonGroup';
 
 import SelectCustomOption from './Tokens';
 import { useState, useMemo, useRef, useEffect } from "react"
-import { chainsForEden, EdenEVMAbi, EdenPLAbi, erc20Abi } from "../constants.ts"
+import { chainsForEden, EdenEVMAbi, EdenPLAbi, erc20Abi } from "../constants"
 import { useReadContract, useChainId, useConfig, useAccount, useWriteContract } from 'wagmi'
 import { readContract, waitForTransactionReceipt, getBalance } from "@wagmi/core"
 import { parseEther, weiUnits, formatEther } from 'viem'
-import BasicModal from "./DepositModal.tsx";
+import BasicModal from "./DepositModal";
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import Divider from '@mui/joy/Divider';
 import Chip from '@mui/joy/Chip';
 import { error } from 'console';
-import RecentlyDepositedAndWithdrawn from './RecentlyDepositedBox.tsx';
+import RecentlyDepositedAndWithdrawn from './RecentlyDepositedBox';
 
 
 export default function BoxSystemProps() {
@@ -47,7 +45,6 @@ export default function BoxSystemProps() {
     useEffect(() => {
         getPoolBalance();
     }, [chainId, tokens]);
-
 
 
 
@@ -121,71 +118,27 @@ export default function BoxSystemProps() {
     }
 
     async function getPoolBalance(): Promise<Number> {
-        if (chainId == 11155111) {
+        const Link = chainsForEden[chainId]["Link"]
 
-            const Link = chainsForEden[chainId]["Link"]
-
-            if (tokens == "1") {
-                const EdenPLAddressETH = chainsForEden[chainId]["EdenPLETH"]
-                const balance = await getBalance(config, {
-                    address: EdenPLAddressETH as `0x${string}`,
-                    chainId: chainId,
-                })
-                setBalance(formatEther(balance.value));
-                return Number(balance)
-            } else {
-                const EdenPLAddressLINK = chainsForEden[chainId]["EdenPLLINK"]
-                const balance = await readContract(config, {
-
-                    abi: erc20Abi,
-                    address: Link as `0x${string}`,
-                    functionName: `balanceOf`,
-                    args: [EdenPLAddressLINK as `0x${string}`]
-                })
-                setBalance(formatEther(balance));
-                return Number(balance)
-
-            }
-        } else if (chainId == 84532) {
-            const Link = chainsForEden[chainId]["Link"]
-
-            if (tokens == "1") {
-                const EdenEVMAddressETH = chainsForEden[chainId]["EdenEVMETH"]
-                const balance = await getBalance(config, {
-                    address: EdenEVMAddressETH as `0x${string}`,
-                    chainId: chainId,
-                })
-                setBalance(formatEther(balance.value));
-                return Number(balance)
-
-            } else {
-                const EdenEVMAddressLINK = chainsForEden[chainId]["EdenEVMLINK"]
-                const balance = await readContract(config, {
-
-                    abi: erc20Abi,
-                    address: Link as `0x${string}`,
-                    functionName: `balanceOf`,
-                    args: [EdenEVMAddressLINK as `0x${string}`]
-                })
-                setBalance(formatEther(balance));
-                return Number(balance)
-
-            }
+        if (tokens == "1") {
+            const EdenPLAddressETH = chainsForEden[chainId]["EdenPLETH"]
+            const balance = await getBalance(config, {
+                address: EdenPLAddressETH as `0x${string}`,
+                chainId: chainId,
+            })
+            setBalance(formatEther(balance.value));
+            return Number(balance)
         } else {
-            // avalanche has only LINK!
-            const Link = chainsForEden[chainId]["Link"]
-            const EdenEVMAddressLINK = chainsForEden[chainId]["EdenEVMLINK"]
+            const EdenPLAddressLINK = chainsForEden[chainId]["EdenPLLINK"]
             const balance = await readContract(config, {
 
                 abi: erc20Abi,
                 address: Link as `0x${string}`,
                 functionName: `balanceOf`,
-                args: [EdenEVMAddressLINK as `0x${string}`]
+                args: [EdenPLAddressLINK as `0x${string}`]
             })
-
             setBalance(formatEther(balance));
             return Number(balance)
-
         }
     }
 
@@ -195,7 +148,6 @@ export default function BoxSystemProps() {
 
         const realAmount = parseEther(amounts)
         const args = [realAmount];
-
 
 
         buttonie.current && (buttonie.current.innerText = "Processing...")
@@ -213,7 +165,6 @@ export default function BoxSystemProps() {
 
                 }
                 const approvedAmount = await getApprovedAmount(EdenPLAddressLINK)
-
 
                 if (Number(realAmount) > approvedAmount) {
                     buttonie.current && (buttonie.current.innerText = "Approving...!")
@@ -277,15 +228,14 @@ export default function BoxSystemProps() {
             const Link = chainsForEden[chainId]["Link"]
 
             if (tokens != "1") {
-
-
                 const amount = await getBalanceUser(Number(realAmount))
                 if (amount == true) {
                     buttonie.current && (buttonie.current.innerText = "Deposit")
                     throw new Error("Insufficient balance");
-
                 }
                 const approvedAmount = await getApprovedAmount(EdenEVMLINK)
+                console.log("Hello", formatEther(approvedAmount))
+                console.log(realAmount)
 
                 if (Number(amounts) > approvedAmount) {
 
@@ -304,7 +254,7 @@ export default function BoxSystemProps() {
                 const cleanCommitment = String(commitment).slice(2);
 
                 const fee = parseEther("0.01")
-                await writeContractAsync({
+                const Low = await writeContractAsync({
                     abi: EdenEVMAbi,
                     address: EdenEVMLINK as `0x${string}`,
                     functionName: "deposit",
@@ -315,6 +265,8 @@ export default function BoxSystemProps() {
                         0,
                     ],
                 })
+
+                console.log(Low)
                 setProof(note)
 
             } else {
@@ -326,6 +278,7 @@ export default function BoxSystemProps() {
                     buttonie.current && (buttonie.current.innerText = "Deposit")
                     throw new Error("Insufficient balance");
                 }
+
                 const fee = parseEther("0.01")
                 await writeContractAsync({
                     abi: EdenEVMAbi,
@@ -373,8 +326,6 @@ export default function BoxSystemProps() {
 
                 }}
             >
-
-
                 <h1 style={{
                     fontSize: '25px',
                     fontWeight: 'bolder',
@@ -402,8 +353,6 @@ export default function BoxSystemProps() {
                     borderRadius: '40px',
                     width: 150,
                 }} >Deposit</Button></div>
-
-
 
                 <BasicModal WithdrawProof={proof} />
 

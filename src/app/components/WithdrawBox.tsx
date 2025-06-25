@@ -13,13 +13,13 @@ import { AbiCoder, ethers } from 'ethers';
 
 
 
-import SelectCustomOption from './Tokens.tsx';
+import SelectCustomOption from './Tokens';
 import { useState, useMemo, useRef, useEffect } from "react"
-import { chainsForEden, EdenEVMAbi, EdenPLAbi, erc20Abi } from "../constants.ts"
+import { chainsForEden, EdenEVMAbi, EdenPLAbi, erc20Abi } from "../constants"
 import { useReadContract, useChainId, useConfig, useAccount, useWriteContract } from 'wagmi'
 import { readContract, waitForTransactionReceipt, type WriteContractReturnType, getBalance } from "@wagmi/core"
 import { parseEther, formatEther } from 'viem'
-import BasicModal from "./WithdrawModal.tsx";
+import BasicModal from "./WithdrawModal";
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import Divider from '@mui/joy/Divider';
 import { pbkdf2 } from 'crypto';
@@ -173,75 +173,28 @@ export default function BoxSystemProps2() {
 
 
     async function getPoolBalance(): Promise<Number> {
-        if (chainId == 11155111) {
+        const Link = chainsForEden[chainId]["Link"]
 
-            const Link = chainsForEden[chainId]["Link"]
-
-            if (tokens == "1") {
-                const EdenPLAddressETH = chainsForEden[chainId]["EdenPLETH"]
-                const balance = await getBalance(config, {
-                    address: EdenPLAddressETH as `0x${string}`,
-                    chainId: chainId,
-                })
-                setBalance(formatEther(balance.value));
-                return Number(balance)
-            } else {
-                const EdenPLAddressLINK = chainsForEden[chainId]["EdenPLLINK"]
-                const balance = await readContract(config, {
-
-                    abi: erc20Abi,
-                    address: Link as `0x${string}`,
-                    functionName: `balanceOf`,
-                    args: [EdenPLAddressLINK as `0x${string}`]
-                })
-                setBalance(formatEther(balance));
-                return Number(balance)
-
-            }
-        } else if (chainId == 84532) {
-            const Link = chainsForEden[chainId]["Link"]
-
-            if (tokens == "1") {
-                const EdenEVMAddressETH = chainsForEden[chainId]["EdenEVMETH"]
-                const balance = await getBalance(config, {
-                    address: EdenEVMAddressETH as `0x${string}`,
-                    chainId: chainId,
-                })
-                setBalance(formatEther(balance.value));
-                return Number(balance)
-
-            } else {
-                const EdenEVMAddressLINK = chainsForEden[chainId]["EdenEVMLINK"]
-                const balance = await readContract(config, {
-
-                    abi: erc20Abi,
-                    address: Link as `0x${string}`,
-                    functionName: `balanceOf`,
-                    args: [EdenEVMAddressLINK as `0x${string}`]
-                })
-                setBalance(formatEther(balance));
-                return Number(balance)
-
-            }
+        if (tokens == "1") {
+            const EdenPLAddressETH = chainsForEden[chainId]["EdenPLETH"]
+            const balance = await getBalance(config, {
+                address: EdenPLAddressETH as `0x${string}`,
+                chainId: chainId,
+            })
+            setBalance(formatEther(balance.value));
+            return Number(balance)
         } else {
-            // avalanche has only LINK!
-            const Link = chainsForEden[chainId]["Link"]
-            const EdenEVMAddressLINK = chainsForEden[chainId]["EdenEVMLINK"]
+            const EdenPLAddressLINK = chainsForEden[chainId]["EdenPLLINK"]
             const balance = await readContract(config, {
 
                 abi: erc20Abi,
                 address: Link as `0x${string}`,
                 functionName: `balanceOf`,
-                args: [EdenEVMAddressLINK as `0x${string}`]
+                args: [EdenPLAddressLINK as `0x${string}`]
             })
-
             setBalance(formatEther(balance));
             return Number(balance)
-
         }
-
-
-
     }
 
 

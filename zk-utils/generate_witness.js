@@ -87,14 +87,13 @@ async function main(args = []) {
     pathIndices: merkleProof.pathIndices,
   };
 
+  console.log("test10");
   // 5. Create groth16 proof for witness
   const { proof } = await snarkjs.groth16.fullProve(
     input,
-    "/zk/withdraw.wasm",
-    "/zk/withdraw.zkey"
+    "./zk/withdraw.wasm",
+    "./zk/withdraw.zkey"
   );
-
-  console.log("test2");
 
   const pA = proof.pi_a.slice(0, 2);
   const pB = proof.pi_b.slice(0, 2);

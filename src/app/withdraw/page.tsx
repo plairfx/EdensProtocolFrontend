@@ -18,8 +18,6 @@ export default function Withdraw() {
                 </div>
             ) : (
 
-
-
                 <div>
                     <ButtonGroup
                         variant="soft"
@@ -39,6 +37,12 @@ export default function Withdraw() {
                             color: 'black',
                             borderRadius: "10px"
                         }}>Withdraw</Button>
+                        <Link href="/vault"><Button sx={{
+                            bgcolor: 'white',
+                            color: 'black',
+                            hover: 'gray',
+                            borderRadius: "10px"
+                        }}>Vault</Button></Link>
                     </ButtonGroup>
 
 

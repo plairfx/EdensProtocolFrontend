@@ -26,7 +26,7 @@ async function main(args = []) {
     Buffer.concat([
       leBigintToBuffer(nullifier, 31),
       leBigintToBuffer(secret, 31),
-      leBigintToBuffer(amount, 8),
+      leBigintToBuffer(amount, 9),
     ])
   );
 
@@ -58,7 +58,7 @@ async function second(args = []) {
     Buffer.concat([
       leBigintToBuffer(nullifier, 31),
       leBigintToBuffer(secret, 31),
-      leBigintToBuffer(amount, 8),
+      leBigintToBuffer(amount, 9),
     ])
   );
 

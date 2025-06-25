@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
+import { parseEther, formatEther } from 'viem'
+
 
 interface DW {
   rindexerId: number
   chain: number
   blockNumber: string
   amount: string
+  _asset: string
 }
 
 interface DepositAndWithdrawResponse {
@@ -32,6 +35,7 @@ const GET_RECENT_DEPOSITS_AND_WITHDRAWS = `query GetRecentDepositsAndWithdraws {
       chain
       blockNumber
       amount
+      _asset
     }
   }
   allEdenPllinkWithdrawns(first: 20, orderBy: [BLOCK_NUMBER_DESC, TX_INDEX_DESC]) {
@@ -40,6 +44,7 @@ const GET_RECENT_DEPOSITS_AND_WITHDRAWS = `query GetRecentDepositsAndWithdraws {
       chain
       blockNumber
       amount
+      _asset
     }
   }
   allEdenPlDepositeds {
@@ -47,6 +52,7 @@ const GET_RECENT_DEPOSITS_AND_WITHDRAWS = `query GetRecentDepositsAndWithdraws {
       chain
       blockNumber
       amount
+      _asset
     }
   }
   allEdenPlWithdrawns {
@@ -54,9 +60,20 @@ const GET_RECENT_DEPOSITS_AND_WITHDRAWS = `query GetRecentDepositsAndWithdraws {
       chain
       blockNumber
       amount
+      _asset
     }
   }
 }`
+
+function getToken(params): Promise<String> {
+
+  if (params == "0x0000000000000000000000000000000000000000") {
+    return "ETH"
+  } else {
+    return "LINK"
+  }
+
+}
 
 async function fetchDW(): Promise<DepositAndWithdrawResponse> {
   try {
@@ -96,6 +113,7 @@ interface ProcessedItem {
   amount: string
   chain: number
   blockNumber: string
+  _asset: string
   rindexerId: number
 }
 
@@ -113,16 +131,14 @@ function useDepositsAndWithdraws(token: string) {
 
       // Create a set of withdrawn items for filtering
       const withdrawnKeys = new Set<string>()
-
-
       const withdrawnKeysETH = new Set<string>()
       data.data.allEdenPlWithdrawns.nodes.forEach((item) => {
-        withdrawnKeys.add(`${item.chain}-${item.blockNumber}-${item.amount}`)
+        withdrawnKeys.add(`${item.chain}-${item.blockNumber}-${item.amount}-${item._asset}`)
       })
 
 
       const activeDeposits2 = data.data.allEdenPlDepositeds.nodes.filter(item => {
-        const key = `${item.chain}-${item.blockNumber}-${item.amount}`
+        const key = `${item.chain}-${item.blockNumber}-${item.amount}-${item._asset}`
         return !withdrawnKeys.has(key)
       })
 
@@ -133,12 +149,14 @@ function useDepositsAndWithdraws(token: string) {
           amount: item.amount,
           chain: item.chain,
           blockNumber: item.blockNumber,
+          _asset: item._asset,
           rindexerId: item.rindexerId
         })),
         ...data.data.allEdenPlWithdrawns.nodes.map(item => ({
           type: 'withdraw' as const,
           amount: item.amount,
           chain: item.chain,
+          _asset: item._asset,
           blockNumber: item.blockNumber,
           rindexerId: item.rindexerId
         }))
@@ -152,7 +170,7 @@ function useDepositsAndWithdraws(token: string) {
 
 
       // Return the most recent items
-      return allItems2.slice(0, 20)
+      return allItems2.slice(0, 30)
     }, [data])
 
     return { isLoading, error, data: processedData }
@@ -166,9 +184,18 @@ function useDepositsAndWithdraws(token: string) {
         withdrawnKeys.add(`${item.chain}-${item.blockNumber}-${item.amount}`)
       })
 
+      data.data.allEdenPlWithdrawns.nodes.forEach((item) => {
+        withdrawnKeys.add(`${item.chain}-${item.blockNumber}-${item.amount}`)
+      })
+
 
       // Filter deposits that haven't been withdrawn
       const activeDeposits = data.data.allEdenPllinkDepositeds.nodes.filter(item => {
+        const key = `${item.chain}-${item.blockNumber}-${item.amount}`
+        return !withdrawnKeys.has(key)
+      })
+
+      const activeDeposits2 = data.data.allEdenPlDepositeds.nodes.filter(item => {
         const key = `${item.chain}-${item.blockNumber}-${item.amount}`
         return !withdrawnKeys.has(key)
       })
@@ -180,7 +207,9 @@ function useDepositsAndWithdraws(token: string) {
           type: 'deposit' as const,
           amount: item.amount,
           chain: item.chain,
+
           blockNumber: item.blockNumber,
+          _asset: item._asset,
           rindexerId: item.rindexerId
         })),
         ...data.data.allEdenPllinkWithdrawns.nodes.map(item => ({
@@ -189,8 +218,26 @@ function useDepositsAndWithdraws(token: string) {
           chain: item.chain,
           blockNumber: item.blockNumber,
           rindexerId: item.rindexerId
+        })),
+        ...activeDeposits2.map(item => ({
+          type: 'deposit' as const,
+          amount: item.amount,
+          chain: item.chain,
+          blockNumber: item.blockNumber,
+          _asset: item._asset,
+          rindexerId: item.rindexerId
+        })),
+        ...data.data.allEdenPlWithdrawns.nodes.map(item => ({
+          type: 'withdraw' as const,
+          amount: item.amount,
+          chain: item.chain,
+          blockNumber: item.blockNumber,
+          _asset: item._asset,
+          rindexerId: item.rindexerId
         }))
+
       ]
+
 
       // Sort by block number (descending)
       allItems.sort((a, b) => {
@@ -213,22 +260,13 @@ function getChainName(chainId: string): string {
 
   const chains: { [key: string]: string } = {
     '0': 'Ethereum',
-    '14767482510784806043': 'Base',
-    '10344971235874465080': 'Avalanche',
+    '10344971235874465080': 'Base',
+    '14767482510784806043': 'Avalanche',
   }
-  return chains[chainId] || `Chain ${chainid}`
+  return chains[chainId] || `${chainid}`
 }
 
 
-function formatAmount(amount: string): string {
-  try {
-    // Convert from wei to ether (divide by 10^18)
-    const value = parseFloat(amount) / 1e18
-    return value.toFixed(0)
-  } catch {
-    return amount
-  }
-}
 
 export default function RecentlyDepositedAndWithdrawn(tokens: string) {
   const { isLoading, error, data } = useDepositsAndWithdraws(tokens)
@@ -275,17 +313,18 @@ export default function RecentlyDepositedAndWithdrawn(tokens: string) {
           >
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-3">
-                <span className={`font-semibold ${item.type === 'deposit' ? 'text-black' : 'text-black'
-                  }`}>
-                  {item.type === 'deposit'} {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
-                </span>
                 <span className="text-gray-600 text-sm">
                   <b> {getChainName(item.chain)}</b>
                 </span>
+                <span className={` ${item.type === 'deposit' ? 'text-black' : 'text-black'
+                  }`}>
+                  {item.type === 'deposit'} {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+                </span>
+
               </div>
               <div className="text-right">
-                <div className="font-medium" >{formatAmount(item.amount)} {"LINK"}</div>
-                <div className="text-sm text-gray-500">Block: #{item.blockNumber}</div>
+                <div className=" text-black" >{formatEther(item.amount)} {getToken(item._asset)}</div>
+                <div className="font-semibold text-gray-500">Block: #{item.blockNumber}</div>
               </div>
             </div>
           </div>

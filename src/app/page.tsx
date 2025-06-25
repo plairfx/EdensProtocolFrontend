@@ -42,6 +42,12 @@ export default function Home() {
               hover: 'gray',
               borderRadius: "10px"
             }}>Withdraw</Button></Link>
+            <Link href="/vault"><Button sx={{
+              bgcolor: 'white',
+              color: 'black',
+              hover: 'gray',
+              borderRadius: "10px"
+            }}>Vault</Button></Link>
           </ButtonGroup>
 
 

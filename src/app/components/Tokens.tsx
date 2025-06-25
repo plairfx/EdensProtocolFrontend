@@ -6,7 +6,7 @@ import ListDivider from '@mui/joy/ListDivider';
 import Select, { SelectOption } from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
 import { useState, useMemo, useRef, useEffect } from "react"
-import { chainsForEden, EdenEVMAbi, EdenPLAbi, erc20Abi } from "../constantsin"
+import { chainsForEden, EdenEVMAbi, EdenPLAbi, erc20Abi } from "../constants"
 import { useReadContract, useChainId, useConfig, useAccount, useWriteContract } from 'wagmi'
 import { readContract, waitForTransactionReceipt } from "@wagmi/core"
 

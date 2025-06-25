@@ -15,7 +15,7 @@ import { AbiCoder, ethers } from 'ethers';
 
 import SelectCustomOption from './Tokens.tsx';
 import { useState, useMemo, useRef, useEffect } from "react"
-import { chainsForEden, EdenEVMAbi, EdenPLAbi, erc20Abi } from "../constants.ts"
+import { chainsForEden, EdenEVMAbi, EdenPLAbi, erc20Abi } from "../constants"
 import { useReadContract, useChainId, useConfig, useAccount, useWriteContract } from 'wagmi'
 import { readContract, waitForTransactionReceipt, type WriteContractReturnType, getBalance } from "@wagmi/core"
 import { parseEther, formatEther } from 'viem'

@@ -13,7 +13,7 @@ import ButtonGroup from '@mui/joy/ButtonGroup';
 
 import SelectCustomOption from './Tokens';
 import { useState, useMemo, useRef, useEffect } from "react"
-import { chainsForEden, EdenEVMAbi, EdenPLAbi, erc20Abi } from "../constants.ts"
+import { chainsForEden, EdenEVMAbi, EdenPLAbi, erc20Abi } from "../constants"
 import { useReadContract, useChainId, useConfig, useAccount, useWriteContract } from 'wagmi'
 import { readContract, waitForTransactionReceipt, getBalance } from "@wagmi/core"
 import { parseEther, weiUnits, formatEther } from 'viem'

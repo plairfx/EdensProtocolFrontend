@@ -3,7 +3,7 @@ FROM ghcr.io/joshstevens19/rindexer-bundled:latest
 
 WORKDIR /app
 
-# This should now work because Railway will build from your repo root
+# Copy from dwindexer folder to Realindexer subfolder  
 COPY dwindexer/Realindexer/ /app/
 
 ARG PORT="3001"

@@ -3,12 +3,15 @@ FROM ghcr.io/joshstevens19/rindexer-bundled:latest
 
 WORKDIR /app
 
-# Copy from dwindexer folder to Realindexer subfolder  
-COPY dwindexer/Realindexer/ /app/
+# Debug: Let's see what's actually in the build context
+RUN echo "=== Build context root ==="
+RUN ls -la .
+RUN echo "=== Looking for any folders ==="
+RUN find . -type d -maxdepth 3
+RUN echo "=== Looking for dwindexer specifically ==="
+RUN ls -la dwindexer/ || echo "dwindexer folder not found"
+RUN echo "=== Looking for any Realindexer ==="
+RUN find . -name "*ealindexer*" -type d 2>/dev/null || echo "No Realindexer found"
 
-ARG PORT="3001"
-ENV PORT=${PORT}
-EXPOSE ${PORT}
-
-ENTRYPOINT ["/app/rindexer"]
-CMD ["start", "-p", "/app", "all"]
+# We'll comment out the copy for now
+# COPY dwindexer/Realindexer/ /app/

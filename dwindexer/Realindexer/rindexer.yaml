@@ -18,7 +18,7 @@ contracts:
       - network: sepolia
         address: 0x4418Ba6d81b2C3C031A969203d26A49bB8055d20
         start_block: "8615200"
-    abi: ./abis/EdenPL.abi.json
+    abi: ./EdenPL.abi.json
     include_events:
       - Deposited
       - Withdrawn

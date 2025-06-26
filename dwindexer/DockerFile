@@ -1,0 +1,14 @@
+# syntax = docker/dockerfile:1.6
+FROM ghcr.io/joshstevens19/rindexer-bundled:latest
+
+WORKDIR /app
+
+# This should now work because Railway will build from your repo root
+COPY dwindexer/Realindexer/ /app/
+
+ARG PORT="3001"
+ENV PORT=${PORT}
+EXPOSE ${PORT}
+
+ENTRYPOINT ["/app/rindexer"]
+CMD ["start", "-p", "/app", "all"]

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { parseEther, formatEther } from 'viem'
 
 
@@ -9,6 +9,7 @@ interface DW {
   blockNumber: string
   amount: string
   _asset: string
+  commitment: string | null
 }
 
 interface DepositAndWithdrawResponse {
@@ -36,6 +37,7 @@ const GET_RECENT_DEPOSITS_AND_WITHDRAWS = `query GetRecentDepositsAndWithdraws {
       blockNumber
       amount
       _asset
+      commitment
     }
   }
   allEdenPllinkWithdrawns(first: 20, orderBy: [BLOCK_NUMBER_DESC, TX_INDEX_DESC]) {
@@ -53,6 +55,7 @@ const GET_RECENT_DEPOSITS_AND_WITHDRAWS = `query GetRecentDepositsAndWithdraws {
       blockNumber
       amount
       _asset
+      commitment
     }
   }
   allEdenPlWithdrawns {
@@ -65,14 +68,12 @@ const GET_RECENT_DEPOSITS_AND_WITHDRAWS = `query GetRecentDepositsAndWithdraws {
   }
 }`
 
-function getToken(params): Promise<String> {
-
+function getToken(params: string): string {
   if (params == "0x0000000000000000000000000000000000000000") {
     return "ETH"
   } else {
     return "LINK"
   }
-
 }
 
 async function fetchDW(): Promise<DepositAndWithdrawResponse> {
@@ -108,6 +109,47 @@ async function fetchDW(): Promise<DepositAndWithdrawResponse> {
   }
 }
 
+interface CommitmentsData {
+  ethCommitments: string[]
+  linkCommitments: string[]
+}
+
+function useCommitments() {
+  const { data, isLoading, error } = useQuery<DepositAndWithdrawResponse>({
+    queryKey: ["CommitmentsData"],
+    queryFn: fetchDW,
+    retry: 2,
+    retryDelay: 1000,
+  })
+  console.log("Hello from RDB")
+
+  const commitments = useMemo((): CommitmentsData => {
+    if (!data?.data) {
+      return { ethCommitments: [], linkCommitments: [] }
+    }
+
+    // Extract ETH commitments (from allEdenPlDepositeds)
+    const ethCommitments = data.data.allEdenPlDepositeds.nodes
+      .filter(item => item.commitment && item.commitment !== null)
+      .map(item => item.commitment as string)
+
+    console.log(ethCommitments)
+
+    // Extract LINK commitments (from allEdenPllinkDepositeds)
+    const linkCommitments = data.data.allEdenPllinkDepositeds.nodes
+      .filter(item => item.commitment && item.commitment !== null)
+      .map(item => item.commitment as string)
+
+    console.log(linkCommitments)
+
+    return { ethCommitments, linkCommitments }
+  }, [data])
+
+  // Save commitments when they change
+
+  return { commitments, isLoading, error }
+}
+
 interface ProcessedItem {
   type: 'deposit' | 'withdraw'
   amount: string
@@ -136,12 +178,10 @@ function useDepositsAndWithdraws(token: string) {
         withdrawnKeys.add(`${item.chain}-${item.blockNumber}-${item.amount}-${item._asset}`)
       })
 
-
       const activeDeposits2 = data.data.allEdenPlDepositeds.nodes.filter(item => {
         const key = `${item.chain}-${item.blockNumber}-${item.amount}-${item._asset}`
         return !withdrawnKeys.has(key)
       })
-
 
       const allItems2: ProcessedItem[] = [
         ...activeDeposits2.map(item => ({
@@ -168,7 +208,6 @@ function useDepositsAndWithdraws(token: string) {
         return blockB - blockA
       })
 
-
       // Return the most recent items
       return allItems2.slice(0, 30)
     }, [data])
@@ -188,7 +227,6 @@ function useDepositsAndWithdraws(token: string) {
         withdrawnKeys.add(`${item.chain}-${item.blockNumber}-${item.amount}`)
       })
 
-
       // Filter deposits that haven't been withdrawn
       const activeDeposits = data.data.allEdenPllinkDepositeds.nodes.filter(item => {
         const key = `${item.chain}-${item.blockNumber}-${item.amount}`
@@ -200,14 +238,12 @@ function useDepositsAndWithdraws(token: string) {
         return !withdrawnKeys.has(key)
       })
 
-
       // Combine active deposits and withdrawals with type labels
       const allItems: ProcessedItem[] = [
         ...activeDeposits.map(item => ({
           type: 'deposit' as const,
           amount: item.amount,
           chain: item.chain,
-
           blockNumber: item.blockNumber,
           _asset: item._asset,
           rindexerId: item.rindexerId
@@ -235,9 +271,7 @@ function useDepositsAndWithdraws(token: string) {
           _asset: item._asset,
           rindexerId: item.rindexerId
         }))
-
       ]
-
 
       // Sort by block number (descending)
       allItems.sort((a, b) => {
@@ -245,7 +279,6 @@ function useDepositsAndWithdraws(token: string) {
         const blockB = parseInt(b.blockNumber)
         return blockB - blockA
       })
-
 
       // Return the most recent items
       return allItems.slice(0, 20)
@@ -266,14 +299,20 @@ function getChainName(chainId: string): string {
   return chains[chainId] || `${chainid}`
 }
 
+interface RecentlyDepositedAndWithdrawnProps {
+  tokens: string
+}
 
-
-export default function RecentlyDepositedAndWithdrawn(tokens: string) {
+export default function RecentlyDepositedAndWithdrawn({ tokens }: RecentlyDepositedAndWithdrawnProps) {
   const { isLoading, error, data } = useDepositsAndWithdraws(tokens)
+
+  // Initialize the commitments hook to trigger automatic saving
+  const { commitments, isLoading: commitmentsLoading, error: commitmentsError } = useCommitments()
+
+
 
   if (isLoading) {
     return (
-
       <div className="flex justify-center items-center p-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
@@ -298,33 +337,32 @@ export default function RecentlyDepositedAndWithdrawn(tokens: string) {
   }
 
   return (
-
-
     <div className="space-y-1 p-0" style={{ width: 600, maxWidth: 600 }}>
       <h2 className="text-xl font-bold mb-4">Recent Deposits & Withdrawals</h2>
-      <div className="space-y-2" >
+      <div className="space-y-2">
         {data.map((item, index) => (
           <div
             key={`${item.type}-${item.rindexerId}-${index}`}
-            className={`p-1 rounded-lg border ${item.type === 'deposit'
-              ? 'bg-white'
-              : 'bg-white'
+            className={`p-1 rounded-lg border ${item.type === 'deposit' ? 'bg-white' : 'bg-white'
               }`}
           >
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-3">
                 <span className="text-gray-600 text-sm">
-                  <b> {getChainName(item.chain)}</b>
+                  <b>{getChainName(item.chain)}</b>
                 </span>
-                <span className={` ${item.type === 'deposit' ? 'text-black' : 'text-black'
+                <span className={`${item.type === 'deposit' ? 'text-black' : 'text-black'
                   }`}>
-                  {item.type === 'deposit'} {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+                  {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
                 </span>
-
               </div>
               <div className="text-right">
-                <div className=" text-black" >{formatEther(item.amount)} {getToken(item._asset)}</div>
-                <div className="font-semibold text-gray-500">Block: #{item.blockNumber}</div>
+                <div className="text-black">
+                  {formatEther(item.amount)} {getToken(item._asset)}
+                </div>
+                <div className="font-semibold text-gray-500">
+                  Block: #{item.blockNumber}
+                </div>
               </div>
             </div>
           </div>

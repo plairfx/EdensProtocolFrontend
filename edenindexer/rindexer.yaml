@@ -1,0 +1,37 @@
+name: edenindexer
+project_type: no-code
+networks:
+  - name: sepolia
+    chain_id: 11155111
+    rpc:
+storage:
+  postgres:
+    enabled: true
+  csv:
+    enabled: true
+    path: ./generated_csv
+native_transfers:
+  enabled: false
+contracts:
+  - name: EdenPL
+    details:
+      - network: sepolia
+        address: 0x4418Ba6d81b2C3C031A969203d26A49bB8055d20
+        start_block: "8615200"
+    abi: ./abis/EdenPL.abi.json
+    include_events:
+      - Deposited
+      - Withdrawn
+      - DepositFailed
+      - WithdrawFailed
+  - name: EdenPLLINK
+    details:
+      - network: sepolia
+        address: 0xD90f34B559C7b964cb705c5cadaCb682950324f9
+        start_block: "8615200"
+    abi: ./abis/EdenPL.abi.json
+    include_events:
+      - Deposited
+      - Withdrawn
+      - DepositFailed
+      - WithdrawFailed

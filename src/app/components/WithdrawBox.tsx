@@ -147,7 +147,7 @@ export default function BoxSystemProps2() {
 
                 await writeContractAsync({
                     abi: EdenEVMAbi,
-                    address: EdenEVMLINK as `0x${string}`,
+                    address: EdenEVMETH as `0x${string}`,
                     functionName: "withdraw",
                     args: [
                         pAClean,

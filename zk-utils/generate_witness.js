@@ -56,6 +56,7 @@ async function main(args = []) {
 
   // 3. Loading.. the commitment from the csv file from the rindexer...
 
+  // server goes wrong. lets fix this.
   const commitments = await loadFromFile(args[3]);
 
   const leaves = commitments.map((l) => hexToBigint(l));

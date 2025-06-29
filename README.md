@@ -50,5 +50,9 @@ Please visit the website and try to deploy the website yourself,
 ### Launch the server:
 ``pnpm run dev —turbo (visit the website to compile the pages!)``
 
-
+Smart Contract Repo ->
 Edens Protocol: https://github.com/plairfx/EdensProtocol-F
+
+
+### Resources used to make the frontend:
+https://updraft.cyfrin.io/courses/full-stack-web3-development-crash-course

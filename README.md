@@ -11,9 +11,14 @@ Local hosted project will work so you can actually withdraw correctly! with the 
 finaledenp.vercel.app
 
 Please visit the website and try to deploy the website yourself,
-Deploy the website yourself!
-Install the dependencies
-pnpm install
-Launch the server:
-pnpm run dev —turbo (visit the website to compile the pages!)
-# EdensProtocolFrontend
+
+
+## Deploy the website yourself!
+
+### Install the dependencies
+``pnpm install``
+### Launch the server:
+``pnpm run dev —turbo (visit the website to compile the pages!)``
+
+
+Edens Protocol: https://github.com/plairfx/EdensProtocol-F

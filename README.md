@@ -13,22 +13,26 @@ Local hosted project will work so you can actually withdraw correctly! with the 
 #### Deposit Path -> 
 
 ##### BASE DEPOSIT EdenEVM.sol
-Frontend generates commitment with [generate_commitment](https://github.com/plairfx/EdensProtocolFrontend/blob/main/zk-utils/generateCommitment.js) 
-Deposit goes through **Chainlink's CCIP** and inserts the commitment into the `MerkleTreeWithHistory.sol' deployed on the Mainnet. (ETHEREUM)
-It sends a message back with the outcome of the insertion, if it reverts user will get their money back, else they get their deposit proof!
+- Frontend generates commitment with [generate_commitment](https://github.com/plairfx/EdensProtocolFrontend/blob/main/zk-utils/generateCommitment.js) 
+- Deposit goes through **Chainlink's CCIP** and inserts the commitment into the `MerkleTreeWithHistory.sol' deployed on the Mainnet. (ETHEREUM)
+- It sends a message back with the outcome of the insertion, if it reverts user will get their money back, else they get their deposit proof!
 
 
 ##### WITHDRAW  
-Frontend rebuilds the MerkleTreeWithHistory.sol with [generate_witness](https://github.com/plairfx/EdensProtocolFrontend/blob/main/zk-utils/generate_witness.js)
-Converts the deposit proof into the expected inputs to make sure it fits the verifier.sol
-If the proof is invalid for some reason it will emit WithdrawFailed() on the origin chain.
+- Rindexer gathers the events on-chain from the EdenPL.sol contract to rebuild the tree correctly.
+- Frontend rebuilds the MerkleTreeWithHistory.sol with [generate_witness](https://github.com/plairfx/EdensProtocolFrontend/blob/main/zk-utils/generate_witness.js)
+- Converts the deposit proof into the expected inputs to make sure it fits the verifier.sol
+- If the proof is invalid for some reason it will emit WithdrawFailed() on the origin chain.
 
-(EdenPL.sol deposit and withdraws are without CCIP involved as the MerkleTreeWithHistory.sol and verifier.sol are already on the same chain.)
+(EdenPL.sol deposit and withdraws are run without CCIP involved as the MerkleTreeWithHistory.sol and verifier.sol are already on the same chain.)
 
 ## Frontend LINK:
 finaledenp.vercel.app
 or
 https://edens-protocol.vercel.app
+
+Note: The website can't mimic the merkleTree as it does not have access the past deposit commitments made by the previous users!
+Hosting it locally (with [rindexer](https://rindexer.xyz) running) will make it work.
 
 
 Please visit the website and try to deploy the website yourself,
